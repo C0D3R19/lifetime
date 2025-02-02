@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: rgb(10, 10, 10);
+            color: rgb(229, 229, 229);
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .container {
+            max-width: 32rem;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            text-align: center;
+            padding: 1.5rem 0;
+        }
+
+        .title {
+            font-size: 2.25rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+        }
+
+        .date-display {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+        }
+
+        .card {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1.5rem;
+            backdrop-filter: blur(4px);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            text-align: center;
+            opacity: 0.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .main-age {
+            font-size: 3rem;
+            font-weight: 300;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+
+        .grid-item {
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            text-align: center;
+        }
+
+        .grid-item-value {
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+
+        .grid-item-label {
+            opacity: 0.5;
+            font-size: 0.875rem;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .total-label {
+            opacity: 0.5;
+        }
+
+        .progress-bar {
+            height: 0.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: rgb(163, 163, 163);
+            transition: width 1s ease;
+        }
+
+        @keyframes gradient {
+            0%, 100% { opacity: 0.5; transform: translate(0, 0); }
+            50% { opacity: 1; transform: translate(-10px, -10px); }
+        }
+
+        .background {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .gradient {
+            position: absolute;
+            inset: 0;
+            opacity: 0.3;
+        }
+
+        .gradient div {
+            position: absolute;
+            inset: 0;
+            animation: gradient 8s ease infinite;
+            background: radial-gradient(circle at 50% 50%, rgba(200,200,255,0.03), transparent 40%);
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="gradient">
+            <div style="animation-delay: 0s"></div>
+            <div style="animation-delay: 2s"></div>
+            <div style="animation-delay: 4s"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Age Calculator</h1>
+            <div class="date-display">
+                Since August 19, 2007, 8:15 AM
+            </div>
+        </header>
+
+        <section class="card">
+            <div class="card-header">
+                Current Age
+            </div>
+            <p class="main-age" id="mainAge"></p>
+            <div class="grid">
+                <div class="grid-item">
+                    <p class="grid-item-value" id="days">0</p>
+                    <p class="grid-item-label">days</p>
+                </div>
+                <div class="grid-item">
+                    <p class="grid-item-value" id="hours">0</p>
+                    <p class="grid-item-label">hours</p>
+                </div>
+                <div class="grid-item">
+                    <p class="grid-item-value" id="minutes">0</p>
+                    <p class="grid-item-label">min</p>
+                </div>
+                <div class="grid-item">
+                    <p class="grid-item-value" id="seconds">0</p>
+                    <p class="grid-item-label">sec</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                Total Time
+            </div>
+            <div id="totalTime"></div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                Birthday Countdown
+            </div>
+            <div style="text-align: center;">
+                <p style="font-size: 2.5rem; font-weight: 300;" id="birthdayCountdown">0</p>
+                <p style="font-size: 0.875rem; opacity: 0.5;">days until next birthday</p>
+                <div style="margin-top: 1.5rem;">
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill" id="birthdayProgress"></div>
+                    </div>
+                    <p style="font-size: 0.875rem; opacity: 0.5; margin-top: 0.5rem;" id="progressText">0% complete</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const birthDate = new Date('2007-08-19T08:15:00');
+
+        function calculateAge() {
+            const now = new Date();
+            const diffMs = now - birthDate;
+            
+            const nextBirthday = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+            if (now > nextBirthday) nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
+            
+            const daysUntilBirthday = Math.ceil((nextBirthday - now) / (1000 * 60 * 60 * 24));
+            const progress = ((365 - daysUntilBirthday) / 365) * 100;
+            
+            const diffSeconds = Math.floor(diffMs / 1000);
+            const diffMinutes = Math.floor(diffSeconds / 60);
+            const diffHours = Math.floor(diffMinutes / 60);
+            const diffDays = Math.floor(diffHours / 24);
+            
+            const years = Math.floor(diffDays / 365.25);
+            const months = Math.floor((diffDays % 365.25) / 30.44);
+            const days = Math.floor((diffDays % 365.25) % 30.44);
+            const hours = diffHours % 24;
+            const minutes = diffMinutes % 60;
+            const seconds = diffSeconds % 60;
+
+            document.getElementById('mainAge').textContent = `${years} years, ${months} months`;
+            document.getElementById('days').textContent = days;
+            document.getElementById('hours').textContent = hours;
+            document.getElementById('minutes').textContent = minutes;
+            document.getElementById('seconds').textContent = seconds;
+
+            const totalTimeHTML = [
+                { label: 'Days', value: diffDays },
+                { label: 'Hours', value: diffHours },
+                { label: 'Minutes', value: diffMinutes },
+                { label: 'Seconds', value: diffSeconds }
+            ].map(item => `
+                <div class="total-row">
+                    <span class="total-label">${item.label}</span>
+                    <span>${item.value.toLocaleString()}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('totalTime').innerHTML = totalTimeHTML;
+            document.getElementById('birthdayCountdown').textContent = daysUntilBirthday;
+            document.getElementById('birthdayProgress').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `${Math.round(progress)}% complete`;
+        }
+
+        setInterval(calculateAge, 1000);
+        calculateAge();
+    </script>
+</body>
+</html>
